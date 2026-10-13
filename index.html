@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autodiagnóstico #GestãoDeClínicas - Hapvida</title>
+<style>
+:root{
+  --navy:#06152b; --navy2:#0b2342; --cyan:#00c8f5; --orange:#ff970f;
+  --text:#17243a; --muted:#627086; --line:#dce5ef; --panel:#ffffff; --bg:#051426;
+  --softcyan:#e7faff; --softorange:#fff4e5; --softgray:#edf1f6;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background: linear-gradient(135deg, rgba(6,21,43,0.92) 0%, rgba(11,35,66,0.95) 100%), 
+              url('WhatsApp Image 2026-10-13 at 16.17.08.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color:var(--text);
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  line-height:1.5;
+  min-height: 100vh;
+  padding: 16px 10px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.phone-wrapper{
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg);
+  border: 12px solid #1a2d42;
+  border-radius: 36px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,200,245,0.2);
+  overflow: hidden;
+  position: relative;
+}
+/* Notch do celular */
+.phone-wrapper::before{
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 22px;
+  background: #1a2d42;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  z-index: 100;
+}
+.screen-header{
+  background: radial-gradient(circle at 85% 10%,#0a3b60 0,transparent 30%),linear-gradient(120deg,var(--navy),#071d38);
+  color:#fff;
+  padding: 34px 16px 18px;
+  text-align: center;
+  border-bottom: 3px solid var(--cyan);
+}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.7rem;font-weight:800;color:var(--cyan)}
+h1{font-size:1.35rem;line-height:1.2;margin:6px 0}
+.screen-header p{font-size:0.8rem;color:#d6e3f2;margin:4px 0 0}
+.accent{color:var(--orange)}
+
+.container{padding: 16px; background: var(--bg); min-height: 480px; display: flex; flex-direction: column; justify-content: space-between;}
+.intro, .question-card, .result-card{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(13,35,64,.1);
+  margin-bottom: 14px;
+  padding: 16px;
+}
+.intro h2, .result-card h2{margin:0 0 6px;font-size:1.05rem; color:var(--navy)}
+.instructions{color:var(--muted);font-size:0.85rem;margin:0 0 12px}
+
+.progress-wrap{margin: 10px 0 14px}
+.progress-label{display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;margin-bottom:6px;color:#fff}
+.progress{height:6px;background:rgba(255,255,255,0.2);border-radius:999px;overflow:hidden}
+.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),#1688d2);transition:width .2s}
+
+.question-card h3{font-size:.95rem;line-height:1.35;margin:0 0 12px;color:var(--navy)}
+.q-meta{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);font-weight:800;margin-bottom:5px}
+.options{display:grid;gap:8px}
+.option{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--line);padding:10px 12px;border-radius:9px;cursor:pointer;transition:.15s;background:#fff}
+.option:hover{border-color:#7acfe4;background:#f8fdff}
+.option:has(input:checked){border-color:var(--cyan);background:var(--softcyan);box-shadow:inset 0 0 0 1px var(--cyan)}
+.option input{margin-top:3px;accent-color:#008db5;flex-shrink:0}
+.option span{font-size:.88rem;color:var(--text)}
+
+.actions{display:flex;gap:8px;margin-top:14px}
+button{border:0;border-radius:10px;padding:12px;font-weight:800;font-size:.9rem;cursor:pointer;width:100%}
+.btn-primary{background:var(--cyan);color:#052036}
+.btn-primary:hover{background:#41d9fa}
+.btn-secondary{background:#e6edf5;color:#18304d}
+button:disabled{opacity:.45;cursor:not-allowed}
+.notice{color:#b0c4de;font-size:.78rem;text-align:center;margin-top:6px}
+.hidden{display:none!important}
+
+.result-card{padding:18px}
+.result-kicker{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:var(--muted)}
+.result-title{font-size:1.35rem;margin:4px 0 2px;color:var(--navy)}
+.result-subtitle{color:var(--muted);font-size:.82rem;margin:0 0 12px}
+.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.score{border-radius:10px;padding:10px 6px;text-align:center;background:var(--softgray)}
+.score strong{display:block;font-size:1.4rem;line-height:1.2}
+.score small{font-weight:700;font-size:.68rem;color:#516077}
+.score.trad{background:var(--softorange)}.score.trad strong{color:#d97706}
+.score.fut{background:var(--softcyan)}.score.fut strong{color:#008db5}
+
+.result-section{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.result-section h3{font-size:.88rem;margin:0 0 4px;color:var(--navy)}
+.result-section p, .result-section ul{font-size:.82rem;margin:0;color:#46566d}
+.result-section ul{padding-left:16px}
+.result-section li{margin:4px 0}
+.commitment{width:100%;min-height:60px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;font-size:.82rem;resize:vertical}
+.footer{font-size:.72rem;color:#8ab4f8;text-align:center;margin:14px 0 0}
+</style>
+</head>
+<body>
+
+<div class="phone-wrapper">
+  <header class="screen-header">
+    <div class="eyebrow">#GestãoDeClínicas • Hapvida</div>
+    <h1>Qual é o seu <span class="accent">modelo de gestão?</span></h1>
+    <p>Inteligência Humana na Era Digital</p>
+  </header>
+
+  <main class="container">
+    <!-- Tela Inicial de Boas-Vindas -->
+    <div id="welcomeScreen" class="intro">
+      <h2>Bem-vindo(a) ao Autodiagnóstico</h2>
+      <p class="instructions">Esta ferramenta foi desenvolvida para ajudar você a refletir sobre suas práticas de liderança e identificar oportunidades de evolução.</p>
+      <p class="instructions">Responda a cada uma das 15 situações selecionando a alternativa que melhor reflete seu dia a dia. Não há respostas certas ou erradas.</p>
+      <button class="btn-primary" id="startBtn" style="margin-top:10px;">Iniciar Autodiagnóstico</button>
+    </div>
+
+    <!-- Tela do Quiz (uma pergunta por vez) -->
+    <div id="quizContainer" class="hidden">
+      <div class="progress-wrap">
+        <div class="progress-label"><span id="progressStepText">Situação 1 de 15</span><span id="progressPctText">6%</span></div>
+        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      </div>
+
+      <div id="questionCard" class="question-card">
+        <!-- Renderizado via JS -->
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary hidden" id="prevBtn" type="button">Voltar</button>
+        <button class="btn-primary" id="nextBtn" type="button" disabled>Avançar</button>
+      </div>
+      <p class="notice" id="stepNotice">Selecione uma alternativa para avançar.</p>
+    </div>
+
+    <!-- Tela de Resultados -->
+    <section id="result" class="result-card hidden" aria-live="polite">
+      <div class="result-kicker">Resultado do autodiagnóstico</div>
+      <h2 class="result-title" id="resultTitle"></h2>
+      <p class="result-subtitle" id="resultSubtitle"></p>
+      
+      <div class="scores">
+        <div class="score trad"><strong id="scoreT">0</strong><small>Tradicional</small></div>
+        <div class="score"><strong id="scoreI">0</strong><small>Intermediário</small></div>
+        <div class="score fut"><strong id="scoreF">0</strong><small>Do Futuro</small></div>
+      </div>
+      
+      <div class="result-grid">
+        <div class="result-section"><h3>Pontos fortes</h3><p id="strengths"></p></div>
+        <div class="result-section"><h3>Pontos de atenção</h3><p id="risks"></p></div>
+        <div class="result-section"><h3>Plano de evolução</h3><ul id="actionsList"></ul></div>
+      </div>
+
+      <div class="result-section">
+        <h3>Meu compromisso</h3>
+        <textarea class="commitment" id="commitment" placeholder="Qual comportamento vai priorizar?"></textarea>
+      </div>
+
+      <div class="actions" style="margin-top:10px">
+        <button class="btn-primary" type="button" id="copyBtn">Copiar resultado</button>
+        <button class="btn-secondary" type="button" id="printBtn">Salvar PDF</button>
+      </div>
+      <p class="notice" id="copyNotice" style="color:var(--navy)"></p>
+    </section>
+
+    <p class="footer">Hapvida • Treinamento Gestão de Clínicas</p>
+  </main>
+</div>
+
+<script>
+const questions = [
+{theme:"Resposta a desvios",q:"Quando um resultado importante fica abaixo do esperado, qual costuma ser sua primeira iniciativa?",a:[
+["I","Converso com a equipe para entender o que aconteceu e definir os próximos passos."],
+["F","Investigo os sinais que antecederam o resultado e procuro oportunidades de evitar recorrências."],
+["T","Identifico as falhas e estabeleço as correções necessárias para recuperar o resultado."]]},
+{theme:"Organização do trabalho",q:"Ao organizar a rotina de trabalho da equipe, o que mais orienta suas prioridades?",a:[
+["F","Os objetivos, os indicadores e os riscos que podem comprometer as entregas."],
+["T","As atividades previstas, os prazos e o cumprimento das orientações."],
+["I","A combinação entre as metas, as demandas do dia e as necessidades da equipe."]]},
+{theme:"Abertura a melhorias",q:"Um colaborador experiente sugere uma maneira diferente de executar uma atividade. Como você costuma reagir?",a:[
+["T","Prefiro manter o procedimento atual até que exista uma orientação formal para alterá-lo."],
+["I","Avalio a proposta e considero aplicá-la quando houver condições favoráveis."],
+["F","Analiso os possíveis ganhos e, se fizer sentido, incentivo um teste acompanhado de resultados."]]},
+{theme:"Tomada de decisão",q:"Quando precisa tomar uma decisão com impacto na operação, como normalmente procede?",a:[
+["I","Consulto as pessoas envolvidas e decido conforme a urgência e a complexidade."],
+["F","Considero evidências, cenários, riscos e contribuições relevantes antes de definir o caminho."],
+["T","Avalio as informações disponíveis e concentro a decisão para garantir alinhamento e agilidade."]]},
+{theme:"Gestão de desempenho",q:"Ao perceber que uma pessoa da equipe comete erros recorrentes, qual é sua abordagem mais habitual?",a:[
+["F","Procuro compreender as causas, identificar necessidades de desenvolvimento e acompanhar a evolução."],
+["T","Reforço as orientações, os padrões esperados e a necessidade de corrigir os erros."],
+["I","Oriento a pessoa, acompanho as entregas e proponho apoio se a dificuldade persistir."]]},
+{theme:"Gestão de imprevistos",q:"Quando sua agenda é ocupada por várias ocorrências inesperadas, o que acontece com seu planejamento?",a:[
+["T","Redireciono meu tempo para resolver as ocorrências e retomo o planejamento depois."],
+["I","Reorganizo as prioridades e preservo parte do tempo para as atividades planejadas."],
+["F","Reavalio as causas das ocorrências e ajusto a rotina para reduzir novas interrupções."]]},
+{theme:"Acompanhamento da equipe",q:"Como você costuma acompanhar as entregas dos integrantes da sua equipe?",a:[
+["I","Realizo alinhamentos periódicos e intensifico o acompanhamento quando necessário."],
+["F","Combino resultados esperados, indicadores e pontos de controle, respeitando a autonomia acordada."],
+["T","Verifico frequentemente o andamento das atividades e solicito atualizações sobre a execução."]]},
+{theme:"Gestão de conflitos",q:"Quando dois profissionais apresentam opiniões diferentes sobre uma solução, o que você tende a fazer?",a:[
+["F","Estimulo o debate, confronto os argumentos com evidências e construo critérios para a decisão."],
+["I","Ouço os envolvidos e busco uma alternativa que permita avançar com equilíbrio."],
+["T","Defino a direção que considero mais adequada para evitar prolongar a divergência."]]},
+{theme:"Uso de informações",q:"Quando precisa avaliar o desempenho de uma área, qual fonte costuma ter maior peso?",a:[
+["T","Minha experiência prática e a percepção construída no acompanhamento cotidiano."],
+["F","Indicadores, tendências, evidências e comparação entre o resultado esperado e o realizado."],
+["I","Os indicadores disponíveis combinados com a experiência e a percepção da operação."]]},
+{theme:"Delegação",q:"Quando delega uma atividade relevante, como costuma estabelecer o acompanhamento?",a:[
+["I","Defino a entrega, acompanho os marcos principais e intervenho se surgirem dificuldades."],
+["T","Detalho as etapas de execução e acompanho de perto para assegurar a conformidade."],
+["F","Alinho o resultado esperado, os limites de decisão e os critérios para pedir apoio."]]},
+{theme:"Gestão da mudança",q:"Diante de uma mudança de processo que exige adaptação da equipe, qual é sua tendência?",a:[
+["F","Explico o propósito, envolvo as pessoas e acompanho os efeitos da mudança."],
+["I","Apresento as novas orientações e ajusto a implementação conforme as dificuldades observadas."],
+["T","Estabeleço as novas regras e verifico se todos estão seguindo o procedimento definido."]]},
+{theme:"Aprendizado organizacional",q:"Quando um problema operacional é resolvido, o que normalmente acontece em seguida?",a:[
+["I","Registro os principais aprendizados quando a ocorrência tem impacto relevante."],
+["T","Retomo as atividades prioritárias e acompanho se o problema volta a acontecer."],
+["F","Reviso as causas e os controles existentes para incorporar melhorias ao processo."]]},
+{theme:"Mobilização para resultados",q:"Quando sua equipe enfrenta uma meta desafiadora, qual abordagem você tende a adotar?",a:[
+["T","Distribuo tarefas e acompanho a execução para manter o ritmo das entregas."],
+["F","Construo clareza sobre a meta, mobilizo competências e estimulo soluções propostas pela equipe."],
+["I","Defino as prioridades com o time e ajusto o acompanhamento de acordo com o avanço."]]},
+{theme:"Desenvolvimento de talentos",q:"Ao identificar que um profissional tem potencial para assumir responsabilidades maiores, o que costuma fazer?",a:[
+["I","Ofereço oportunidades gradualmente, conforme a prontidão demonstrada."],
+["F","Crio desafios progressivos, ofereço feedback e amplio sua autonomia de forma estruturada."],
+["T","Mantenho as responsabilidades atuais até ter segurança de que ele domina as atividades necessárias."]]},
+{theme:"Evolução da gestão",q:"Quando uma área apresenta resultados consistentes, como você decide o que fazer a seguir?",a:[
+["F","Investigo oportunidades de evolução e preparo a operação para demandas futuras."],
+["T","Mantenho as práticas que funcionam e asseguro que os padrões continuem sendo cumpridos."],
+["I","Preservo o que funciona e implemento melhorias quando surgem necessidades concretas."]]}
+];
+
+const profiles = {
+T:{name:"Gestor Tradicional",subtitle:"Orientado à execução e ao controle",strengths:"Disciplina operacional, clareza de procedimentos e agilidade nas correções.",risks:"Concentração de decisões e foco excessivo em ocorrências podem limitar a autonomia e inovação.",actions:["Delegue decisões operacionais com limites definidos.","Reserve tempo semanal para antecipar riscos.","Acompanhe indicadores e resultados."]},
+I:{name:"Gestor Intermediário",subtitle:"Em transição para o modelo estratégico",strengths:"Equilíbrio entre execução, diálogo e adaptação às necessidades da operação.",risks:"Alternância entre controle e autonomia pode gerar inconsistências.",actions:["Defina decisões autônomas para a equipe.","Estabeleça indicadores de tendência.","Transforme problemas em planos de melhoria."]},
+F:{name:"Gestor do Futuro",subtitle:"Orientado à prevenção e autonomia",strengths:"Visão sistêmica, decisões baseadas em evidências e desenvolvimento de talentos.",risks:"Precisa manter conexão forte com a disciplina operacional e gestão de riscos.",actions:["Garanta que a inovação respeite os padrões.","Converta análises em decisões mensuráveis.","Desenvolva sucessores na equipe."]}
+};
+
+let currentIdx = 0;
+const userAnswers = new Array(questions.length).fill(null);
+
+const welcomeScreen = document.getElementById("welcomeScreen");
+const quizContainer = document.getElementById("quizContainer");
+const questionCard = document.getElementById("questionCard");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const stepNotice = document.getElementById("stepNotice");
+const progressStepText = document.getElementById("progressStepText");
+const progressPctText = document.getElementById("progressPctText");
+const progressBar = document.getElementById("progressBar");
+
+document.getElementById("startBtn").addEventListener("click", () => {
+  welcomeScreen.classList.add("hidden");
+  quizContainer.classList.remove("hidden");
+  renderQuestion();
+});
+
+function renderQuestion() {
+  const item = questions[currentIdx];
+  const savedAns = userAnswers[currentIdx];
+
+  progressStepText.textContent = `Situação ${currentIdx + 1} de ${questions.length}`;
+  const pct = Math.round(((currentIdx) / questions.length) * 100);
+  progressPctText.textContent = `${pct}%`;
+  progressBar.style.width = `${pct}%`;
+
+  questionCard.innerHTML = `
+    <div class="q-meta">${item.theme}</div>
+    <h3>${item.q}</h3>
+    <div class="options">
+      ${item.a.map((opt, j) => `
+        <label class="option">
+          <input type="radio" name="currentQ" value="${opt[0]}" ${savedAns === opt[0] ? 'checked' : ''}>
+          <span>${opt[1]}</span>
+        </label>
+      `).join("")}
+    </div>
+  `;
+
+  // Controlar visibilidade do botão Voltar
+  if (currentIdx === 0) {
+    prevBtn.classList.add("hidden");
+  } else {
+    prevBtn.classList.remove("hidden");
+  }
+
+  // Atualizar estado do botão Avançar
+  nextBtn.disabled = !savedAns;
+  nextBtn.textContent = (currentIdx === questions.length - 1) ? "Ver meu resultado" : "Avançar";
+  stepNotice.textContent = savedAns ? "Alternativa selecionada. Clique em Avançar." : "Selecione uma alternativa para avançar.";
+
+  // Event listener para escolhas
+  const radios = questionCard.querySelectorAll('input[name="currentQ"]');
+  radios.forEach(radio => {
+    radio.addEventListener("change", (e) => {
+      userAnswers[currentIdx] = e.target.value;
+      nextBtn.disabled = false;
+      stepNotice.textContent = "Alternativa selecionada. Clique em Avançar.";
+    });
+  });
+}
+
+prevBtn.addEventListener("click", () => {
+  if (currentIdx > 0) {
+    currentIdx--;
+    renderQuestion();
+  }
+});
+
+nextBtn.addEventListener("click", () => {
+  if (!userAnswers[currentIdx]) return;
+
+  if (currentIdx < questions.length - 1) {
+    currentIdx++;
+    renderQuestion();
+  } else {
+    // Fim do quiz -> Mostrar resultados
+    showResults();
+  }
+});
+
+function showResults() {
+  quizContainer.classList.add("hidden");
+  
+  const scores = {T: 0, I: 0, F: 0};
+  userAnswers.forEach(a => { if(scores[a] !== undefined) scores[a]++; });
+
+  let key = "I";
+  if (scores.F >= 8 && scores.F > scores.T) key = "F";
+  else if (scores.T >= 8 && scores.T > scores.F) key = "T";
+
+  const p = profiles[key];
+  document.getElementById("resultTitle").textContent = p.name;
+  document.getElementById("resultSubtitle").textContent = p.subtitle;
+  document.getElementById("scoreT").textContent = scores.T;
+  document.getElementById("scoreI").textContent = scores.I;
+  document.getElementById("scoreF").textContent = scores.F;
+  document.getElementById("strengths").textContent = p.strengths;
+  document.getElementById("risks").textContent = p.risks;
+  document.getElementById("actionsList").innerHTML = p.actions.map(a => `<li>${a}</li>`).join("");
+  
+  document.getElementById("result").classList.remove("hidden");
+}
+
+document.getElementById("printBtn").addEventListener("click",()=>window.print());
+
+document.getElementById("copyBtn").addEventListener("click", async () => {
+  const scores = {T: 0, I: 0, F: 0};
+  userAnswers.forEach(a => { if(scores[a] !== undefined) scores[a]++; });
+  let key="I"; if(scores.F>=8&&scores.F>scores.T)key="F"; else if(scores.T>=8&&scores.T>scores.F)key="T";
+  const p = profiles[key];
+  const report = `AUTODIAGNÓSTICO HAPVIDA - GESTÃO DE CLÍNICAS\nPerfil: ${p.name}\nTradicional: ${scores.T} | Intermediário: ${scores.I} | Futuro: ${scores.F}\nCompromisso: ${document.getElementById("commitment").value||"Não informado"}`;
+  try{ await navigator.clipboard.writeText(report); document.getElementById("copyNotice").textContent = "Resultado copiado com sucesso!"; }
+  catch(e){ document.getElementById("copyNotice").textContent = "Erro ao copiar."; }
+});
+</script>
+</body>
+</html>
