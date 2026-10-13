@@ -2,191 +2,139 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Autodiagnóstico #GestãoDeClínicas - Hapvida</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Autodiagnóstico • Gestão de Clínicas</title>
+<!-- Supabase JS Client UMD -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --navy:#06152b; --navy2:#0b2342; --cyan:#00c8f5; --orange:#ff970f;
-  --text:#17243a; --muted:#627086; --line:#dce5ef; --panel:#ffffff; --bg:#051426;
+  --text:#17243a; --muted:#627086; --line:#dce5ef; --panel:#fff; --bg:#051326;
   --softcyan:#e7faff; --softorange:#fff4e5; --softgray:#edf1f6;
 }
 *{box-sizing:border-box}
-body{
-  margin:0;
-  background: linear-gradient(135deg, rgba(6,21,43,0.92) 0%, rgba(11,35,66,0.95) 100%), 
-              url('WhatsApp Image 2026-10-13 at 16.17.08.jpg') no-repeat center center fixed;
-  background-size: cover;
-  color:var(--text);
-  font-family:Inter,Segoe UI,Arial,sans-serif;
-  line-height:1.5;
-  min-height: 100vh;
-  padding: 16px 10px 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;line-height:1.4;display:flex;justify-content:center;min-height:100vh}
+.mobile-frame{width:100%;max-width:480px;background:var(--bg);display:flex;flex-direction:column;min-height:100vh;box-shadow:0 0 30px rgba(0,0,0,0.5)}
+.hero{
+  background:linear-gradient(135deg, rgba(6,21,43,0.92), rgba(11,35,66,0.88)), url('WhatsApp Image 2026-10-13 at 16.17.08.jpg') center/cover no-repeat;
+  color:#fff;padding:28px 16px 20px;border-bottom:3px solid var(--cyan);text-align:center;
 }
-.phone-wrapper{
-  width: 100%;
-  max-width: 440px;
-  background: var(--bg);
-  border: 12px solid #1a2d42;
-  border-radius: 36px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,200,245,0.2);
-  overflow: hidden;
-  position: relative;
-}
-/* Notch do celular */
-.phone-wrapper::before{
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 150px;
-  height: 22px;
-  background: #1a2d42;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  z-index: 100;
-}
-.screen-header{
-  background: radial-gradient(circle at 85% 10%,#0a3b60 0,transparent 30%),linear-gradient(120deg,var(--navy),#071d38);
-  color:#fff;
-  padding: 34px 16px 18px;
-  text-align: center;
-  border-bottom: 3px solid var(--cyan);
-}
-.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.7rem;font-weight:800;color:var(--cyan)}
+.eyebrow{text-transform:uppercase;letter-spacing:.14em;font-size:.68rem;font-weight:800;color:var(--cyan)}
 h1{font-size:1.35rem;line-height:1.2;margin:6px 0}
-.screen-header p{font-size:0.8rem;color:#d6e3f2;margin:4px 0 0}
-.accent{color:var(--orange)}
-
-.container{padding: 16px; background: var(--bg); min-height: 480px; display: flex; flex-direction: column; justify-content: space-between;}
-.intro, .question-card, .result-card{
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(13,35,64,.1);
-  margin-bottom: 14px;
-  padding: 16px;
-}
-.intro h2, .result-card h2{margin:0 0 6px;font-size:1.05rem; color:var(--navy)}
-.instructions{color:var(--muted);font-size:0.85rem;margin:0 0 12px}
-
-.progress-wrap{margin: 10px 0 14px}
-.progress-label{display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;margin-bottom:6px;color:#fff}
+.hero p{color:#d6e3f2;margin:6px 0 0;font-size:.82rem}
+.hero .accent{color:var(--orange)}
+.container{padding:16px;flex:1;display:flex;flex-direction:column}
+.intro,.question,.result-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 20px rgba(13,35,64,.12);padding:16px;margin-bottom:12px}
+.intro h2,.result-card h2{margin:0 0 6px;font-size:1.05rem}
+.instructions{color:var(--muted);margin:0;font-size:.85rem}
+.progress-wrap{margin:10px 0 14px}
+.progress-label{display:flex;justify-content:space-between;gap:10px;font-size:.8rem;font-weight:700;margin-bottom:4px;color:#fff}
 .progress{height:6px;background:rgba(255,255,255,0.2);border-radius:999px;overflow:hidden}
 .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),#1688d2);transition:width .2s}
-
-.question-card h3{font-size:.95rem;line-height:1.35;margin:0 0 12px;color:var(--navy)}
-.q-meta{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--cyan);font-weight:800;margin-bottom:5px}
+.question-pane{display:none}
+.question-pane.active{display:block}
+.q-meta{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#708097;font-weight:800;margin-bottom:5px}
+.question h3{font-size:0.98rem;line-height:1.35;margin:0 0 12px}
 .options{display:grid;gap:8px}
-.option{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--line);padding:10px 12px;border-radius:9px;cursor:pointer;transition:.15s;background:#fff}
+.option{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--line);padding:10px 12px;border-radius:10px;cursor:pointer;transition:.15s;background:#fff}
 .option:hover{border-color:#7acfe4;background:#f8fdff}
 .option:has(input:checked){border-color:var(--cyan);background:var(--softcyan);box-shadow:inset 0 0 0 1px var(--cyan)}
-.option input{margin-top:3px;accent-color:#008db5;flex-shrink:0}
-.option span{font-size:.88rem;color:var(--text)}
-
-.actions{display:flex;gap:8px;margin-top:14px}
-button{border:0;border-radius:10px;padding:12px;font-weight:800;font-size:.9rem;cursor:pointer;width:100%}
+.option input{margin-top:2px;accent-color:#008db5;flex-shrink:0}
+.option span{font-size:.88rem}
+.actions{display:flex;gap:8px;margin:14px 0}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;font-size:.9rem;cursor:pointer;flex:1}
 .btn-primary{background:var(--cyan);color:#052036}
 .btn-primary:hover{background:#41d9fa}
 .btn-secondary{background:#e6edf5;color:#18304d}
-button:disabled{opacity:.45;cursor:not-allowed}
-.notice{color:#b0c4de;font-size:.78rem;text-align:center;margin-top:6px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.notice{color:#a9bccc;font-size:.8rem;margin-top:6px;text-align:center}
 .hidden{display:none!important}
-
-.result-card{padding:18px}
-.result-kicker{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:var(--muted)}
-.result-title{font-size:1.35rem;margin:4px 0 2px;color:var(--navy)}
-.result-subtitle{color:var(--muted);font-size:.82rem;margin:0 0 12px}
-.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
-.score{border-radius:10px;padding:10px 6px;text-align:center;background:var(--softgray)}
-.score strong{display:block;font-size:1.4rem;line-height:1.2}
-.score small{font-weight:700;font-size:.68rem;color:#516077}
+.result-card{color:var(--text)}
+.result-kicker{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;font-weight:800;color:#718198}
+.result-title{font-size:1.3rem;margin:3px 0 2px}
+.result-subtitle{color:var(--muted);margin:0 0 12px;font-size:.85rem}
+.scores{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.score{border-radius:8px;padding:10px 4px;text-align:center;background:var(--softgray)}
+.score strong{display:block;font-size:1.4rem;line-height:1.1}
+.score small{font-weight:700;color:#516077;font-size:.7rem}
 .score.trad{background:var(--softorange)}.score.trad strong{color:#d97706}
 .score.fut{background:var(--softcyan)}.score.fut strong{color:#008db5}
-
-.result-section{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
-.result-section h3{font-size:.88rem;margin:0 0 4px;color:var(--navy)}
-.result-section p, .result-section ul{font-size:.82rem;margin:0;color:#46566d}
-.result-section ul{padding-left:16px}
+.result-grid{display:grid;gap:10px;margin-top:10px}
+.result-section{border-top:1px solid var(--line);padding-top:10px}
+.result-section h3{font-size:.9rem;margin:0 0 4px}
+.result-section p{margin:0;color:#46566d;font-size:.85rem}
+.result-section ul{margin:0;padding-left:16px;color:#46566d;font-size:.85rem}
 .result-section li{margin:4px 0}
-.commitment{width:100%;min-height:60px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;font-size:.82rem;resize:vertical}
-.footer{font-size:.72rem;color:#8ab4f8;text-align:center;margin:14px 0 0}
+.commitment{width:100%;min-height:70px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;resize:vertical;font-size:.85rem}
+.footer{font-size:.72rem;color:#8fa3bf;text-align:center;margin:16px 0 8px}
 </style>
 </head>
 <body>
-
-<div class="phone-wrapper">
-  <header class="screen-header">
-    <div class="eyebrow">#GestãoDeClínicas • Hapvida</div>
+<div class="mobile-frame">
+  <header class="hero">
+    <div class="eyebrow">Hapvida • Gestão de Clínicas</div>
     <h1>Qual é o seu <span class="accent">modelo de gestão?</span></h1>
-    <p>Inteligência Humana na Era Digital</p>
+    <p>Autodiagnóstico interativo para celular</p>
   </header>
-
+  
   <main class="container">
-    <!-- Tela Inicial de Boas-Vindas -->
-    <div id="welcomeScreen" class="intro">
-      <h2>Bem-vindo(a) ao Autodiagnóstico</h2>
-      <p class="instructions">Esta ferramenta foi desenvolvida para ajudar você a refletir sobre suas práticas de liderança e identificar oportunidades de evolução.</p>
-      <p class="instructions">Responda a cada uma das 15 situações selecionando a alternativa que melhor reflete seu dia a dia. Não há respostas certas ou erradas.</p>
-      <button class="btn-primary" id="startBtn" style="margin-top:10px;">Iniciar Autodiagnóstico</button>
+    <section class="intro" id="introBox">
+      <h2>Instruções</h2>
+      <p class="instructions">Leia cada situação e escolha a alternativa que melhor representa sua atuação cotidiana. Responda com honestidade para refletir sobre seu estilo de liderança.</p>
+      <div class="actions" style="margin-top:14px;">
+        <button class="btn-primary" type="button" id="startBtn">Iniciar Autodiagnóstico</button>
+      </div>
+    </section>
+
+    <div class="progress-wrap hidden" id="progressWrap">
+      <div class="progress-label"><span id="stepIndicator">Situação 1 de 15</span><span id="progressPercent">6%</span></div>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
     </div>
 
-    <!-- Tela do Quiz (uma pergunta por vez) -->
-    <div id="quizContainer" class="hidden">
-      <div class="progress-wrap">
-        <div class="progress-label"><span id="progressStepText">Situação 1 de 15</span><span id="progressPctText">6%</span></div>
-        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-      </div>
-
-      <div id="questionCard" class="question-card">
-        <!-- Renderizado via JS -->
-      </div>
-
-      <div class="actions">
-        <button class="btn-secondary hidden" id="prevBtn" type="button">Voltar</button>
-        <button class="btn-primary" id="nextBtn" type="button" disabled>Avançar</button>
+    <form id="quiz" class="hidden">
+      <div id="questionsContainer"></div>
+      <div class="actions" id="navActions">
+        <button class="btn-secondary" type="button" id="prevBtn" disabled>Voltar</button>
+        <button class="btn-primary" type="button" id="nextBtn" disabled>Avançar</button>
       </div>
       <p class="notice" id="stepNotice">Selecione uma alternativa para avançar.</p>
-    </div>
+    </form>
 
-    <!-- Tela de Resultados -->
     <section id="result" class="result-card hidden" aria-live="polite">
-      <div class="result-kicker">Resultado do autodiagnóstico</div>
+      <div class="result-kicker">Resultado do Autodiagnóstico</div>
       <h2 class="result-title" id="resultTitle"></h2>
       <p class="result-subtitle" id="resultSubtitle"></p>
-      
       <div class="scores">
         <div class="score trad"><strong id="scoreT">0</strong><small>Tradicional</small></div>
         <div class="score"><strong id="scoreI">0</strong><small>Intermediário</small></div>
         <div class="score fut"><strong id="scoreF">0</strong><small>Do Futuro</small></div>
       </div>
-      
       <div class="result-grid">
-        <div class="result-section"><h3>Pontos fortes</h3><p id="strengths"></p></div>
+        <div class="result-section"><h3>Seus pontos fortes</h3><p id="strengths"></p></div>
         <div class="result-section"><h3>Pontos de atenção</h3><p id="risks"></p></div>
-        <div class="result-section"><h3>Plano de evolução</h3><ul id="actionsList"></ul></div>
+        <div class="result-section"><h3>Plano de evolução recomendado</h3><ul id="actionsList"></ul></div>
       </div>
-
-      <div class="result-section">
-        <h3>Meu compromisso</h3>
-        <textarea class="commitment" id="commitment" placeholder="Qual comportamento vai priorizar?"></textarea>
+      <div class="result-section" style="margin-top:10px">
+        <h3>Meu compromisso de desenvolvimento</h3>
+        <p style="margin-bottom:6px;font-size:.85rem;">Qual comportamento pretende desenvolver primeiro?</p>
+        <textarea class="commitment" id="commitment" placeholder="Ex.: delegar mais, antecipar riscos..."></textarea>
       </div>
-
-      <div class="actions" style="margin-top:10px">
-        <button class="btn-primary" type="button" id="copyBtn">Copiar resultado</button>
-        <button class="btn-secondary" type="button" id="printBtn">Salvar PDF</button>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn-primary" type="button" id="saveRemoteBtn" style="background:#00c8f5;color:#052036;">Enviar ao painel</button>
+        <button class="btn-secondary" type="button" id="copyBtn">Copiar</button>
       </div>
-      <p class="notice" id="copyNotice" style="color:var(--navy)"></p>
+      <p class="notice" id="copyNotice" role="status" style="color:#627086;"></p>
     </section>
 
-    <p class="footer">Hapvida • Treinamento Gestão de Clínicas</p>
+    <p class="footer">Hapvida • Gestão que conecta pessoas, processos e propósito.</p>
   </main>
 </div>
 
 <script>
+const SUPABASE_URL = "https://uwcskbqwdeuitflfenpd.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Ga9xq3EscJZYadHVWf5sgA_1YC09T_2";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const questions = [
 {theme:"Resposta a desvios",q:"Quando um resultado importante fica abaixo do esperado, qual costuma ser sua primeira iniciativa?",a:[
 ["I","Converso com a equipe para entender o que aconteceu e definir os próximos passos."],
@@ -244,112 +192,110 @@ const questions = [
 ["I","Ofereço oportunidades gradualmente, conforme a prontidão demonstrada."],
 ["F","Crio desafios progressivos, ofereço feedback e amplio sua autonomia de forma estruturada."],
 ["T","Mantenho as responsabilidades atuais até ter segurança de que ele domina as atividades necessárias."]]},
-{theme:"Evolução da gestão",q:"Quando uma área apresenta resultados consistentes, como você decide o que fazer a seguir?",a:[
+{theme:"Evolução da gestão",q:"Quando uma área apresenta resultados consistentemente, como você decide o que fazer a seguir?",a:[
 ["F","Investigo oportunidades de evolução e preparo a operação para demandas futuras."],
 ["T","Mantenho as práticas que funcionam e asseguro que os padrões continuem sendo cumpridos."],
 ["I","Preservo o que funciona e implemento melhorias quando surgem necessidades concretas."]]}
 ];
 
 const profiles = {
-T:{name:"Gestor Tradicional",subtitle:"Orientado à execução e ao controle",strengths:"Disciplina operacional, clareza de procedimentos e agilidade nas correções.",risks:"Concentração de decisões e foco excessivo em ocorrências podem limitar a autonomia e inovação.",actions:["Delegue decisões operacionais com limites definidos.","Reserve tempo semanal para antecipar riscos.","Acompanhe indicadores e resultados."]},
-I:{name:"Gestor Intermediário",subtitle:"Em transição para o modelo estratégico",strengths:"Equilíbrio entre execução, diálogo e adaptação às necessidades da operação.",risks:"Alternância entre controle e autonomia pode gerar inconsistências.",actions:["Defina decisões autônomas para a equipe.","Estabeleça indicadores de tendência.","Transforme problemas em planos de melhoria."]},
-F:{name:"Gestor do Futuro",subtitle:"Orientado à prevenção e autonomia",strengths:"Visão sistêmica, decisões baseadas em evidências e desenvolvimento de talentos.",risks:"Precisa manter conexão forte com a disciplina operacional e gestão de riscos.",actions:["Garanta que a inovação respeite os padrões.","Converta análises em decisões mensuráveis.","Desenvolva sucessores na equipe."]}
+T:{name:"Gestor Tradicional",subtitle:"Gestão orientada à execução e controle",strengths:"Disciplina operacional, clareza de procedimentos e agilidade nas correções.",risks:"Concentração de decisões e foco excessivo em ocorrências podem limitar a autonomia e a inovação.",actions:["Delegue decisões operacionais com limites definidos.","Reserve tempo semanal para analisar causas e antecipar riscos.","Substitua parte do controle de tarefas por indicadores de resultado."]},
+I:{name:"Gestor Intermediário",subtitle:"Gestão em transição para o modelo estratégico",strengths:"Equilíbrio entre execução, diálogo, acompanhamento e adaptação operacional.",risks:"A alternância entre controle e autonomia pode gerar inconsistências no cotidiano.",actions:["Defina decisões que a equipe pode tomar sem autorização prévia.","Estabeleça indicadores de tendência além dos resultados.","Transforme problemas recorrentes em planos de melhoria."]},
+F:{name:"Gestor do Futuro",subtitle:"Gestão orientada à prevenção e autonomia",strengths:"Visão sistêmica, decisões apoiadas em evidências e desenvolvimento de talentos.",risks:"A busca por autonomia deve se manter conectada à disciplina operacional.",actions:["Garanta que autonomia e inovação respeitem padrões de qualidade.","Converta indicadores em decisões com prazos e responsáveis.","Desenvolva sucessores para ampliar o impacto da equipe."]}
 };
 
-let currentIdx = 0;
-const userAnswers = new Array(questions.length).fill(null);
+let currentStep = 0;
+const container = document.getElementById("questionsContainer");
 
-const welcomeScreen = document.getElementById("welcomeScreen");
-const quizContainer = document.getElementById("quizContainer");
-const questionCard = document.getElementById("questionCard");
-const prevBtn = document.getElementById("prevBtn");
-const nextBtn = document.getElementById("nextBtn");
-const stepNotice = document.getElementById("stepNotice");
-const progressStepText = document.getElementById("progressStepText");
-const progressPctText = document.getElementById("progressPctText");
-const progressBar = document.getElementById("progressBar");
-
-document.getElementById("startBtn").addEventListener("click", () => {
-  welcomeScreen.classList.add("hidden");
-  quizContainer.classList.remove("hidden");
-  renderQuestion();
-});
-
-function renderQuestion() {
-  const item = questions[currentIdx];
-  const savedAns = userAnswers[currentIdx];
-
-  progressStepText.textContent = `Situação ${currentIdx + 1} de ${questions.length}`;
-  const pct = Math.round(((currentIdx) / questions.length) * 100);
-  progressPctText.textContent = `${pct}%`;
-  progressBar.style.width = `${pct}%`;
-
-  questionCard.innerHTML = `
-    <div class="q-meta">${item.theme}</div>
-    <h3>${item.q}</h3>
-    <div class="options">
-      ${item.a.map((opt, j) => `
-        <label class="option">
-          <input type="radio" name="currentQ" value="${opt[0]}" ${savedAns === opt[0] ? 'checked' : ''}>
-          <span>${opt[1]}</span>
-        </label>
-      `).join("")}
+questions.forEach((item, i) => {
+  const pane = document.createElement("div");
+  pane.className = `question-pane ${i === 0 ? "active" : ""}`;
+  pane.dataset.index = i;
+  pane.innerHTML = `
+    <div class="question">
+      <div class="q-meta">Situação ${i+1} de ${questions.length} · ${item.theme}</div>
+      <h3>${item.q}</h3>
+      <div class="options">
+        ${item.a.map((opt, j) => `
+          <label class="option">
+            <input type="radio" name="q${i}" value="${opt[0]}">
+            <span>${opt[1]}</span>
+          </label>
+        `).join("")}
+      </div>
     </div>
   `;
+  container.appendChild(pane);
+});
 
-  // Controlar visibilidade do botão Voltar
-  if (currentIdx === 0) {
-    prevBtn.classList.add("hidden");
-  } else {
-    prevBtn.classList.remove("hidden");
-  }
+const panes = document.querySelectorAll(".question-pane");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const stepIndicator = document.getElementById("stepIndicator");
+const progressPercent = document.getElementById("progressPercent");
+const progressBar = document.getElementById("progressBar");
 
-  // Atualizar estado do botão Avançar
-  nextBtn.disabled = !savedAns;
-  nextBtn.textContent = (currentIdx === questions.length - 1) ? "Ver meu resultado" : "Avançar";
-  stepNotice.textContent = savedAns ? "Alternativa selecionada. Clique em Avançar." : "Selecione uma alternativa para avançar.";
-
-  // Event listener para escolhas
-  const radios = questionCard.querySelectorAll('input[name="currentQ"]');
-  radios.forEach(radio => {
-    radio.addEventListener("change", (e) => {
-      userAnswers[currentIdx] = e.target.value;
-      nextBtn.disabled = false;
-      stepNotice.textContent = "Alternativa selecionada. Clique em Avançar.";
-    });
-  });
+function updateControls() {
+  stepIndicator.textContent = `Situação ${currentStep + 1} de ${questions.length}`;
+  const pct = Math.round(((currentStep + 1) / questions.length) * 100);
+  progressPercent.textContent = `${pct}%`;
+  progressBar.style.width = `${pct}%`;
+  
+  prevBtn.disabled = currentStep === 0;
+  const answered = panes[currentStep].querySelector("input:checked");
+  nextBtn.disabled = !answered;
+  
+  nextBtn.textContent = (currentStep === questions.length - 1) ? "Ver resultado" : "Avançar";
 }
 
+document.getElementById("startBtn").addEventListener("click", () => {
+  document.getElementById("introBox").classList.add("hidden");
+  document.getElementById("progressWrap").classList.remove("hidden");
+  document.getElementById("quiz").classList.remove("hidden");
+  updateControls();
+});
+
+container.addEventListener("change", () => { updateControls(); });
+
 prevBtn.addEventListener("click", () => {
-  if (currentIdx > 0) {
-    currentIdx--;
-    renderQuestion();
+  if (currentStep > 0) {
+    panes[currentStep].classList.remove("active");
+    currentStep--;
+    panes[currentStep].classList.add("active");
+    updateControls();
+    window.scrollTo({top: 0, behavior: "smooth"});
   }
 });
 
 nextBtn.addEventListener("click", () => {
-  if (!userAnswers[currentIdx]) return;
-
-  if (currentIdx < questions.length - 1) {
-    currentIdx++;
-    renderQuestion();
+  if (!panes[currentStep].querySelector("input:checked")) return;
+  if (currentStep < questions.length - 1) {
+    panes[currentStep].classList.remove("active");
+    currentStep++;
+    panes[currentStep].classList.add("active");
+    updateControls();
+    window.scrollTo({top: 0, behavior: "smooth"});
   } else {
-    // Fim do quiz -> Mostrar resultados
-    showResults();
+    calculateAndShowResult();
   }
 });
 
-function showResults() {
-  quizContainer.classList.add("hidden");
-  
+let calculatedResult = null;
+
+function calculateAndShowResult() {
   const scores = {T: 0, I: 0, F: 0};
-  userAnswers.forEach(a => { if(scores[a] !== undefined) scores[a]++; });
+  for (let i = 0; i < questions.length; i++) {
+    const val = document.querySelector(`input[name="q${i}"]:checked`)?.value;
+    if (val) scores[val]++;
+  }
 
   let key = "I";
   if (scores.F >= 8 && scores.F > scores.T) key = "F";
   else if (scores.T >= 8 && scores.T > scores.F) key = "T";
 
   const p = profiles[key];
+  calculatedResult = { perfil: p.name, subtitulo: p.subtitle, tradicional: scores.T, intermediario: scores.I, futuro: scores.F };
+
   document.getElementById("resultTitle").textContent = p.name;
   document.getElementById("resultSubtitle").textContent = p.subtitle;
   document.getElementById("scoreT").textContent = scores.T;
@@ -358,20 +304,52 @@ function showResults() {
   document.getElementById("strengths").textContent = p.strengths;
   document.getElementById("risks").textContent = p.risks;
   document.getElementById("actionsList").innerHTML = p.actions.map(a => `<li>${a}</li>`).join("");
-  
+
+  document.getElementById("progressWrap").classList.add("hidden");
+  document.getElementById("quiz").classList.add("hidden");
   document.getElementById("result").classList.remove("hidden");
+  window.scrollTo({top: 0, behavior: "smooth"});
 }
 
-document.getElementById("printBtn").addEventListener("click",()=>window.print());
+document.getElementById("saveRemoteBtn").addEventListener("click", async () => {
+  if (!calculatedResult) return;
+  const commitmentText = document.getElementById("commitment").value.trim();
+  const payload = {
+    perfil: calculatedResult.perfil,
+    subtitulo: calculatedResult.subtitulo,
+    tradicional: calculatedResult.tradicional,
+    intermediario: calculatedResult.intermediario,
+    futuro: calculatedResult.futuro,
+    compromisso: commitmentText || "Não informado"
+  };
+
+  const btn = document.getElementById("saveRemoteBtn");
+  btn.disabled = true;
+  btn.textContent = "Enviando...";
+
+  try {
+    const { error } = await supabaseClient.from("hapvida_gestao_respostas").insert([payload]);
+    if (error) throw error;
+    document.getElementById("copyNotice").textContent = "✅ Resposta enviada com sucesso!";
+    btn.textContent = "Enviado!";
+  } catch (err) {
+    console.error(err);
+    document.getElementById("copyNotice").textContent = "⚠️ Erro ao enviar. Tente novamente.";
+    btn.disabled = false;
+    btn.textContent = "Tentar novamente";
+  }
+});
 
 document.getElementById("copyBtn").addEventListener("click", async () => {
-  const scores = {T: 0, I: 0, F: 0};
-  userAnswers.forEach(a => { if(scores[a] !== undefined) scores[a]++; });
-  let key="I"; if(scores.F>=8&&scores.F>scores.T)key="F"; else if(scores.T>=8&&scores.T>scores.F)key="T";
-  const p = profiles[key];
-  const report = `AUTODIAGNÓSTICO HAPVIDA - GESTÃO DE CLÍNICAS\nPerfil: ${p.name}\nTradicional: ${scores.T} | Intermediário: ${scores.I} | Futuro: ${scores.F}\nCompromisso: ${document.getElementById("commitment").value||"Não informado"}`;
-  try{ await navigator.clipboard.writeText(report); document.getElementById("copyNotice").textContent = "Resultado copiado com sucesso!"; }
-  catch(e){ document.getElementById("copyNotice").textContent = "Erro ao copiar."; }
+  if (!calculatedResult) return;
+  const commitmentText = document.getElementById("commitment").value.trim();
+  const report = `AUTODIAGNÓSTICO • HAPVIDA\nPerfil: ${calculatedResult.perfil}\nPontuação: T(${calculatedResult.tradicional}) | I(${calculatedResult.intermediario}) | F(${calculatedResult.futuro})\nCompromisso: ${commitmentText || "A definir"}`;
+  try {
+    await navigator.clipboard.writeText(report);
+    document.getElementById("copyNotice").textContent = "Copiado para a área de transferência!";
+  } catch (e) {
+    document.getElementById("copyNotice").textContent = "Erro ao copiar.";
+  }
 });
 </script>
 </body>
